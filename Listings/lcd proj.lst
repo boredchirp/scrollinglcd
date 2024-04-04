@@ -1,0 +1,132 @@
+A51 MACRO ASSEMBLER  LCD_PROJ                                                             04/04/2024 11:59:39 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\lcd proj.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5\C51\BIN\A51.EXE lcd proj.asm SET(SMALL) DEBUG PRINT(.\Listings\lcd proj.lst) OBJECT(.\O
+                      bjects\lcd proj.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1     ;sfr P0 = 0x80     ; Port 0
+                       2     ;sfr P1 = 0x90     ; Port 1
+                       3     ;sfr P2 = 0xA0     ; Port 2
+                       4     ;sfr P3 = 0xB0     ; Port 3
+                       5     
+  00B5                 6     sbit rs = P3^5    ; Register select (RS)
+  00B6                 7     sbit en = P3^6    ; Enable (EN) pin
+  00B7                 8     sbit rw = P3^7    ; Read write (RW) pin
+                       9     
+0000 73616E69         10     text:   db "sanika and team's project        ", 0
+0004 6B612061                
+0008 6E642074                
+000C 65616D27                
+0010 73207072                
+0014 6F6A6563                
+0018 74202020                
+001C 20202020                
+0020 2000                    
+                      11     
+0022 7A14             12     delay:  mov r2, #20         ; Outer loop counter
+0024                  13     delay_outer:
+0024 79FA             14             mov r1, #250       ; Inner loop counter
+0026                  15     delay_inner:
+0026 00               16             nop                ; 1 cycle delay
+0027 00               17             nop
+0028 00               18             nop
+0029 00               19             nop
+002A D9FA             20             djnz r1, delay_inner
+002C DAF6             21             djnz r2, delay_outer
+002E 22               22             ret
+                      23     
+                      24     ; Function to send values to the command register of LCD
+002F                  25     lcdcmd:
+002F F590             26             mov P1, a          ; Send value to Port 1
+0031 C2B5             27             clr rs             ; RS = 0 (Command mode)
+0033 C2B7             28             clr rw             ; RW = 0 (Write mode)
+0035 D2B6             29             setb en            ; Enable LCD
+0037 1122             30             call delay
+0039 C2B6             31             clr en             ; Disable LCD
+003B 22               32             ret
+                      33     
+                      34     ; Function to send values to the data register of LCD
+003C                  35     display:
+003C F590             36             mov P1, a          ; Send value to Port 1
+003E D2B5             37             setb rs            ; RS = 1 (Data mode)
+0040 C2B7             38             clr rw             ; RW = 0 (Write mode)
+0042 D2B6             39             setb en            ; Enable LCD
+0044 1122             40             call delay
+0046 C2B6             41             clr en             ; Disable LCD
+0048 22               42             ret
+                      43     
+                      44     ; Function to initialize the LCD
+0049                  45     lcdint:
+0049 759000           46             mov P1, #0          ; Initialize Port 1
+004C 75B003           47             mov P3, #0x03       ; Initialize Port 3
+004F 1122             48             call delay
+0051 7430             49             mov a, #0x30
+A51 MACRO ASSEMBLER  LCD_PROJ                                                             04/04/2024 11:59:39 PAGE     2
+
+0053 113C             50             call display        ; Display initialization command 1
+0055 7430             51             mov a, #0x30
+0057 113C             52             call display        ; Display initialization command 2
+0059 7430             53             mov a, #0x30
+005B 113C             54             call display        ; Display initialization command 3
+005D 7438             55             mov a, #0x38
+005F 112F             56             call lcdcmd         ; Set function mode: 2 lines, 5x8 font
+0061 740F             57             mov a, #0x0F
+0063 112F             58             call lcdcmd         ; Display on, cursor blinking
+0065 7401             59             mov a, #0x01
+0067 112F             60             call lcdcmd         ; Clear display
+0069 7406             61             mov a, #0x06
+006B 112F             62             call lcdcmd         ; Entry mode, auto-increment cursor
+006D 748F             63             mov a, #0x8F
+006F 112F             64             call lcdcmd         ; Set DDRAM address
+0071 22               65             ret
+                      66     
+0072                  67     main:
+0072 900000           68             mov dptr, #text     ; Load address of text into DPTR
+0075 7F00             69             mov r7, #0          ; Initialize index register
+0077                  70     loop:
+0077 E0               71             movx a, @dptr       ; Load character from text
+0078 600E             72             jz end_loop         ; If character is null, end loop
+007A 113C             73             call display        ; Display character
+007C 1122             74             call delay          ; Delay
+007E 7418             75             mov a, #0x18
+0080 112F             76             call lcdcmd         ; Shift display left
+0082 1122             77             call delay          ; Delay
+0084 A3               78             inc dptr            ; Increment data pointer
+0085 0F               79             inc r7              ; Increment index
+0086 80EF             80             sjmp loop           ; Repeat loop
+0088                  81     end_loop:
+0088 80FE             82             sjmp $              ; End of program
+                      83     end
+A51 MACRO ASSEMBLER  LCD_PROJ                                                             04/04/2024 11:59:39 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+DELAY. . . . . . .  C ADDR   0022H   A   
+DELAY_INNER. . . .  C ADDR   0026H   A   
+DELAY_OUTER. . . .  C ADDR   0024H   A   
+DISPLAY. . . . . .  C ADDR   003CH   A   
+EN . . . . . . . .  B ADDR   00B0H.6 A   
+END_LOOP . . . . .  C ADDR   0088H   A   
+LCDCMD . . . . . .  C ADDR   002FH   A   
+LCDINT . . . . . .  C ADDR   0049H   A   
+LOOP . . . . . . .  C ADDR   0077H   A   
+MAIN . . . . . . .  C ADDR   0072H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P3 . . . . . . . .  D ADDR   00B0H   A   
+RS . . . . . . . .  B ADDR   00B0H.5 A   
+RW . . . . . . . .  B ADDR   00B0H.7 A   
+TEXT . . . . . . .  C ADDR   0000H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
